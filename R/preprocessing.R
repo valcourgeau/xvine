@@ -78,3 +78,29 @@ apply_integral_transform <- function(data, u0s){
     )
   )
 }
+
+build_stack <- function(data, k){
+  # data is a matrix
+  # k is the length of the window
+
+  dt_stack <- zoo::rollapply(
+    data, width=k,
+    FUN=function(x){c(t(x))},
+    by.column=F
+  )
+  return(dt_stack)
+}
+
+build_conditional_stack <- function(data, k, col, u0){
+  # k-window of data where the colomn col is above quantile(u0)
+  # data is a matrix
+  # k is the length of the window
+  # col idx
+  # u0 quantile
+
+  thres <- quantile(data[,col], u0)
+  idx <- which(data[,col] >= thres)
+  dt_stack <- build_stack(data, k)
+
+  return(dt_stack[idx,])
+}
