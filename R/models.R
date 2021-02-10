@@ -4,7 +4,7 @@ fit_markov_svines <- function(data, k.markov, ...){
   assertthat::see_if(min(data) >= 0)
 
   n_cores <- parallel::detectCores()
-  return(svines::svine(data,p = k.markov, cores = n_cores, ...))
+  return(svines::svine(data = data, p = k.markov, cores = n_cores, ...))
 }
 
 fit_markov_rvines <- function(data, k.markov, ...){
