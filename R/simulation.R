@@ -5,7 +5,7 @@ model_simulation <- function(n, model, ...){
     vine_sim_vals <- NULL
     while(is.null(vine_sim_vals)){
       tryCatch(
-        {vine_sim_vals <- svines::svine_sim(n = k.markov, rep = n, model = model, cores = n_cores, ...)},
+        {vine_sim_vals <- svines::svine_sim(n = k.markov, rep = n, model = model, cores = n_cores, ...)}
       )
     }
 
