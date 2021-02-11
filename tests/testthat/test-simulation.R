@@ -14,7 +14,7 @@ test_that("postprocessing/model_simulation/fit_markov_svines/", {
     data = data_it$data, k.markov=k.m,
     family_set="archimedean", selcrit="mbicv"
   )
-  v_sims <- model_simulation(n=n_sims, model=svine_fit, qrng=T)
+  v_sims <- model_simulation(n=n_sims, model=svine_fit, qrng=F)
   testthat::expect_equal(as.vector(dim(v_sims)), c(k.m, n_col, n_sims))
   testthat::expect_lte(max(v_sims), 1.0)
   testthat::expect_gte(max(v_sims), 0.0)
@@ -35,7 +35,7 @@ test_that("postprocessing/model_simulation/fit_markov_rvines/", {
   data_it <- apply_integral_transform(data, u0s=rep(quant, n_col))
   rvine_fit <- fit_markov_rvines(
     data = data_it$data, k.markov=k.m,
-    copula_controls = list(family_set="archimedean", selcrit="mbicv"),
+    copula_controls = list(family_set="archimedean", selcrit="mbicv")
   )
   v_sims <- model_simulation(n=n_sims, model=rvine_fit)
   testthat::expect_equal(as.vector(dim(v_sims)), c(k.m, n_col, n_sims))
@@ -61,7 +61,7 @@ test_that("postprocessing/model_simulation/shape_svines_rvines/", {
   )
   rvine_fit <- fit_markov_rvines(
     data_it$data, k.markov=k.m,
-    copula_controls = list(family_set="archimedean", selcrit="mbicv"),
+    copula_controls = list(family_set="archimedean", selcrit="mbicv")
   )
 
   r_sims <- model_simulation(n=n_sims, model=rvine_fit)

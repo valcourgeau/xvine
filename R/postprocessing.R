@@ -9,7 +9,6 @@ proba_single_conditional_single_target <- function(data, col_target, col_source,
 
   above_target_data <- data[2:k, col_target, above_idx]
 
-  print(dim(above_target_data))
   if(is.vector(above_target_data)){
     p_above <- mean(above_target_data > u0_target)
   }else{
@@ -63,21 +62,24 @@ proba_single_conditional_time_target <- function(data, w_target, col_source, u0_
   stopifnot(length(w_target) == k - 1)
 
   above_idx <- data[1,col_source,] > u0_source
-  stopifnot(any(above_idx))
+  stopifnot(any(above_idx)) # check some are above
+  stopifnot(any(!above_idx))# check some are below
 
   above_target_data <- data[2:k,, above_idx] # remove time t and keeps all marginals
   if(is.vector(above_target_data)){
-    p_above <- mean(above_target_data > u0_target)
+    stop('Not Implemented')
+    p_factual <- mean(above_target_data > u0_target)
   }else{
-    p_above <- apply(above_target_data, 2, function(x){rowMeans(w_target %*% x > u0_target)}) # filter target
+    p_factual <- apply(above_target_data, 2, function(x){rowMeans(w_target %*% x > u0_target)}) # filter target
   }
 
   below_target_data <- data[2:k,, -above_idx]
   if(is.vector(below_target_data)){
-    p_below <- mean(below_target_data > u0_target)
+    stop('Not Implemented')
+    p_counterfactual <- mean(below_target_data > u0_target)
   }else{
-    p_below <- apply(below_target_data, 2, function(x){rowMeans(w_target %*% x > u0_target)}) # filter target
+    p_counterfactual <- apply(below_target_data, 2, function(x){rowMeans(w_target %*% x > u0_target)}) # filter target
   }
 
-  return(cbind(p_above, p_below))
+  return(cbind(p_factual, p_counterfactual))
 }

@@ -4,15 +4,22 @@ model_simulation <- function(n, model, ...){
     k.markov <- model$copula$p
     vine_sim_vals <- NULL
     while(is.null(vine_sim_vals)){
-      tryCatch(
-        {vine_sim_vals <- svines::svine_sim(n = k.markov, rep = n, model = model, cores = n_cores, ...)}
+      vine_sim_vals <-tryCatch(
+        { svines::svine_sim(n = k.markov, rep = n, model = model, cores = n_cores, ...)},
+        error=function(cond){return(NULL)}
       )
     }
 
     return(vine_sim_vals)
   }else{
     if(inherits(model, "vine")){
-      vine_sim_vals <- rvinecopulib::rvine(n = n, vine = model, cores = n_cores, ...)
+      vine_sim_vals <- NULL
+      while(is.null(vine_sim_vals)){
+        vine_sim_vals <- tryCatch(
+          { rvinecopulib::rvine(n = n, vine = model, cores = n_cores, ...)},
+          error=function(cond){return(NULL)}
+        )
+      }
 
       # process into k.markov * d * n
       k.markov <- dim(vine_sim_vals)[2] / model$d
