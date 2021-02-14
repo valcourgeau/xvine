@@ -107,7 +107,6 @@ wrapper_tt <- function(data, col_source, u0_target, u0_source){
   )
 }
 
-
 proba_time_target <- function(data, w_target, col_source, u0_target, u0_source){
   # data: matrix k * d * n
   # w_target are not checked to sum to 1
@@ -157,9 +156,18 @@ proba_all_target <- function(data, w_target, col_source, u0_target, u0_source){
   k <- dim(data)[1]
   d <- dim(data)[2]
   stopifnot(k >= 2)
-  stopifnot(is.matrix(w_target))
-  stopifnot(dim(w_target)[1] == k - 1)
-  stopifnot(dim(w_target)[2] == d)
+  if(is.matrix(w_target)){
+    stopifnot(dim(w_target)[1] == k - 1)
+    stopifnot(dim(w_target)[2] == d)
+  }else{
+    if(is.vector(w_target)){
+      # weights are assumed to be by column
+      stopifnot(length(w_target) == d * (k - 1))
+      w_target <- matrix(w_target, nrow = k - 1, ncol = d, byrow = F)
+    }else{
+      stop('w_target must be a vector or matrix of size (k-1, d).')
+    }
+  }
 
   above_idx <- data[1,col_source,] > u0_source
   stopifnot(any(above_idx)) # check some are above
@@ -184,12 +192,12 @@ proba_all_target <- function(data, w_target, col_source, u0_target, u0_source){
   return(list('factual'=p_factual, 'counterfactual'=p_counterfactual))
 }
 
-wrapper_all_t <- function(data, col_source, u0_target, u0_source){
+wrapper_all <- function(data, col_source, u0_target, u0_source){
   #returns a function only on parameters
   return(
     function(w){
       proba_all_target(
-        data, w, col_source, u0_target, u0_source
+        data=data, w_target=w, col_source=col_source, u0_target=u0_target, u0_source=u0_source
       )
     }
   )

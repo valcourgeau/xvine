@@ -15,7 +15,7 @@ maximise_pn <- function(data, target, col_source, u0_target, u0_source, type = '
       wrap_pn <- wrapper_pn_ct(data, target, col_source, u0_target, u0_source)
     }else{
       if(type == 'all'){
-        stop('Not Implemented.')
+        wrap_pn <- wrapper_pn_all(data, target, col_source, u0_target, u0_source)
       }
     }
   }
@@ -55,6 +55,25 @@ wrapper_pn_tt <- function(data, col_target, col_source, u0_target, u0_source){
         causal_p$counterfactual
       )
       return(prod(pn[col_target]))
+    }
+  )
+}
+
+wrapper_pn_all <- function(data, col_source, u0_target, u0_source){
+  # wraps the single conditional time target
+  # weights are standardised using a softmax
+
+  f <- wrapper_all(data, col_source, u0_target, u0_source) # wrapper
+  return(
+    function(w){
+      w <- as.vector(w)
+      w <- softmax(w)
+      causal_p <- f(w)
+      pn <- proba_necessary_causation(
+        causal_p$factual,
+        causal_p$counterfactual
+      )
+      return(prod(pn))
     }
   )
 }
