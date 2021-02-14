@@ -4,6 +4,23 @@ proba_necessary_causation <- function(p_factual, p_counterfactual){
   )
 }
 
+maximise_pn <- function(data, target, col_source, u0_target, u0_source, type = 'time'){
+  # target can be times or col_target
+  # type can be 'time', 'cross' & 'all'
+  stopifnot(type %in% c('time', 'cross' & 'all'))
+  if(type == 'time'){
+    wrap_pn <- wrapper_pn_tt(data, target, col_source, u0_target, u0_source)
+  }else{
+    if(type == 'cross'){
+      wrap_pn <- wrapper_pn_ct(data, target, col_source, u0_target, u0_source)
+    }else{
+      if(type == 'all'){
+        stop('Not Implemented.')
+      }
+    }
+  }
+}
+
 wrapper_pn_ct <- function(data, times, col_source, u0_target, u0_source){
   # wraps the single conditional cross target
   # weights are standardised using softmax
