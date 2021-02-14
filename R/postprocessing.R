@@ -1,4 +1,4 @@
-proba_single_conditional_single_target <- function(data, col_target, col_source, u0_target, u0_source){
+proba_single_target <- function(data, col_target, col_source, u0_target, u0_source){
   # data: matrix k * d * n
   k <- dim(data)[1]
   d <- dim(data)[2]
@@ -26,7 +26,7 @@ proba_single_conditional_single_target <- function(data, col_target, col_source,
   return(list('factual'=p_factual, 'counterfactual'=p_counterfactual))
 }
 
-proba_single_conditional_cross_target <- function(data, w_target, col_source, u0_target, u0_source){
+proba_cross_target <- function(data, w_target, col_source, u0_target, u0_source){
   # data: matrix k * d * n
   # w_target are not checked to sum to 1
   k <- dim(data)[1]
@@ -54,18 +54,18 @@ proba_single_conditional_cross_target <- function(data, w_target, col_source, u0
   return(list('factual'=p_factual, 'counterfactual'=p_counterfactual))
 }
 
-wrapper_sc_ct <- function(data, col_source, u0_target, u0_source){
+wrapper_ct <- function(data, col_source, u0_target, u0_source){
   #returns a function only on parameters
   return(
     function(w){
-      proba_single_conditional_cross_target(
+      proba_cross_target(
         data, w, col_source, u0_target, u0_source
       )
     }
   )
 }
 
-proba_single_conditional_time_target <- function(data, w_target, col_source, u0_target, u0_source){
+proba_time_target <- function(data, w_target, col_source, u0_target, u0_source){
   # data: matrix k * d * n
   # w_target are not checked to sum to 1
   k <- dim(data)[1]
@@ -96,11 +96,11 @@ proba_single_conditional_time_target <- function(data, w_target, col_source, u0_
   return(list('factual'=p_factual, 'counterfactual'=p_counterfactual))
 }
 
-wrapper_sc_tt <- function(data, col_source, u0_target, u0_source){
+wrapper_tt <- function(data, col_source, u0_target, u0_source){
   #returns a function only on parameters
   return(
     function(w){
-      proba_single_conditional_time_target(
+      proba_time_target(
         data, w, col_source, u0_target, u0_source
       )
     }
