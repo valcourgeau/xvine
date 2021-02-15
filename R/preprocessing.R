@@ -22,7 +22,8 @@ partial_ecdf <- function(x, u0){
   # u0 is a quantile value between 0 and 1
   # x is a vector
   y <- x[x <= quantile(x, u0)]
-  return(list('data'=ecdf(y)(y)))
+  f <- ecdf(y)
+  return(list('data'=f(y), 'ecdf'=f))
 }
 
 # GPD MLE for data above quantile u0
@@ -53,7 +54,9 @@ integral_transform <- function(x, u0){
     list(
       'data'=x,
       'par.ests'=p_gpd$par.ests,
-      'par.ses'=p_gpd$par.ses
+      'par.ses'=p_gpd$par.ses,
+      'ecdf'=p_ecdf$ecdf,
+      'u0'=u0
     )
   )
 }
@@ -70,11 +73,16 @@ apply_integral_transform <- function(data, u0s){
   data_it_values <- do.call(cbind, lapply(data_it, function(x){x$data}))
   data_it_ests <- do.call(rbind, lapply(data_it, function(x){x$par.ests}))
   data_it_ses <- do.call(rbind, lapply(data_it, function(x){x$par.ses}))
+  data_it_ecdf <- do.call(cbind, lapply(data_it, function(x){x$ecdf}))
+  data_it_u0 <- do.call(cbind, lapply(data_it, function(x){x$u0}))
+
   return(
     list(
       'data'=data_it_values,
       'par.ests'=data_it_ests,
-      'par.ses'=data_it_ses
+      'par.ses'=data_it_ses,
+      'ecdf'=data_it_ecdf,
+      'u0s'=data_it_u0
     )
   )
 }
