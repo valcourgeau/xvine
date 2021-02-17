@@ -87,6 +87,58 @@ apply_integral_transform <- function(data, u0s){
   )
 }
 
+#TODO write tests
+reverse_integral_transform <- function(x, x_source, u0, shape, scale){
+  stopifnot(0 <= u0 & u0 <= 1)
+  reversed_data <- rep(0, length(x))
+  thres <- quantile(x_source, u0)
+
+  reversed_data[x <= u0] <- quantile(
+    x_source[x_source <= u0],
+    probs=x[x <= u0]
+  )
+  reversed_data[x > u0] <- evir::qgpd(
+    p = (x[x > u0]-u0)/(1-u0), mu = thres, xi = shape, beta = scale
+  )
+  return(
+    list(
+      'data'=reversed_data
+    )
+  )
+}
+
+#TODO write tests
+apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes, scales){
+  stopifnot(ncol(data_unif) == ncol(data_source))
+  stopifnot(ncol(data_unif) == length(u0s))
+  stopifnot(length(shapes) == ncol(data_unif))
+  stopifnot(length(scales) == ncol(data_unif))
+  stopifnot(0 <= min(data_unif) & max(data_unif) <= 1)
+
+  # apply it on each marginal
+  data_rit <- lapply(
+    1:length(u0s),
+    function(i){
+      reverse_integral_transform(
+        x = data_unif[,i],
+        x_source = data_source[,i],
+        u0 = u0s[i],
+        shape = shapes[i],
+        scale = scales[i]
+      )
+    }
+  )
+
+  data_rit_values <- do.call(cbind, lapply(data_rit, function(x) x$data))
+  return(
+    list(
+      'data'=data_rit_values,
+      'data_source'=data_source,
+      'u0s'=u0s
+    )
+  )
+}
+
 build_stack <- function(data, k){
   # data is a matrix
   # k is the length of the window

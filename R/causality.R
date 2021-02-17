@@ -31,7 +31,7 @@ maximise_pn <- function(data, target, col_source, u0_target, u0_source, type = '
     par = w_t, fn = function(w){-wrap_pn(w)}
   ) # maximising PN
   if(optim_routine$convergence != 0) warning(paste('maximise_pn: optim routine has not converged for target', target))
-  return(list('weights'=optim_routine$par))
+  return(list('weights'=softmax(optim_routine$par)))
 }
 
 assemble_pn <- function(pn){
