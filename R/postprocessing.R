@@ -149,7 +149,6 @@ wrapper_tt <- function(data, col_source, u0_target, u0_source){
   )
 }
 
-
 proba_all_target <- function(data, w_target, col_source, u0_target, u0_source){
   # data: matrix k * d * n
   # w_target are not checked to sum to 1

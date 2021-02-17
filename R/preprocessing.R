@@ -64,10 +64,20 @@ integral_transform <- function(x, u0){
 # Applying integral transform on each marginal
 apply_integral_transform <- function(data, u0s){
   stopifnot(ncol(data) == length(u0s))
+  has_3_dims <- length(dim(data)) == 3
+  if(has_3_dims){
+    k <- dim(data)[1]
+    d <- dim(data)[2]
+    n <- dim(data)[3]
+    data_2 <- apply(data, 2, cbind) # (k*n, d)
+  }else{
+    data_2 <- data
+  }
+
   # apply it on each marginal
   data_it <- lapply(
     1:length(u0s),
-    function(i){integral_transform(data[,i], u0 = u0s[i])}
+    function(i){integral_transform(data_2[,i], u0 = u0s[i])}
   )
 
   data_it_values <- do.call(cbind, lapply(data_it, function(x){x$data}))
@@ -75,6 +85,11 @@ apply_integral_transform <- function(data, u0s){
   data_it_ses <- do.call(rbind, lapply(data_it, function(x){x$par.ses}))
   data_it_ecdf <- do.call(cbind, lapply(data_it, function(x){x$ecdf}))
   data_it_u0 <- do.call(cbind, lapply(data_it, function(x){x$u0}))
+
+  if(has_3_dims){
+    data_it_values <- array(data_it_values, c(k, n, d))
+    data_it_values <- aperm(data_it_values, c(1, 3, 2))
+  }
 
   return(
     list(
@@ -87,7 +102,6 @@ apply_integral_transform <- function(data, u0s){
   )
 }
 
-#TODO write tests
 reverse_integral_transform <- function(x, x_source, u0, shape, scale){
   stopifnot(0 <= u0 & u0 <= 1)
   reversed_data <- rep(0, length(x))
@@ -115,12 +129,25 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
   stopifnot(length(scales) == ncol(data_unif))
   stopifnot(0 <= min(data_unif) & max(data_unif) <= 1)
 
+  has_3_dims <- length(dim(data_unif)) == 3
+
+  if(has_3_dims){
+    k <- dim(data_unif)[1]
+    d <- dim(data_unif)[2]
+    n <- dim(data_unif)[3]
+    data_unif_2 <- apply(data_unif, 2, cbind) # concatenate into (, d)
+  }else{
+    data_unif_2 <- data_unif
+  }
+
+  data_source <- apply(data_unif, 2, cbind)
+
   # apply it on each marginal
   data_rit <- lapply(
     1:length(u0s),
     function(i){
       reverse_integral_transform(
-        x = data_unif[,i],
+        x = data_unif_2[,i],
         x_source = data_source[,i],
         u0 = u0s[i],
         shape = shapes[i],
@@ -129,7 +156,13 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
     }
   )
 
-  data_rit_values <- do.call(cbind, lapply(data_rit, function(x) x$data))
+  data_rit_values <- do.call(cbind, lapply(data_rit, function(x) x$data)) # (k*n, d)
+
+  if(has_3_dims){
+    data_rit_values <- array(data_rit_values, c(k, n, d))
+    data_rit_values <- aperm(data_rit_values, c(1, 3, 2))
+  }
+
   return(
     list(
       'data'=data_rit_values,

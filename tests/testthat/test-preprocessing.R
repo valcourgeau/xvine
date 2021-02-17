@@ -62,6 +62,21 @@ test_that("preprocessing/apply_integral_transform/", {
   testthat::expect_gte(max(x_it$data), 0.0)
 })
 
+test_that("preprocessing/apply_integral_transform/three_dims", {
+  n <- 1000
+  n_col <- 10
+  quant <- .75
+  xi <- 0.1
+  beta <- 1.
+  x <- array(evir::rgpd(n = n*n_col*n_col, xi = xi, beta = beta), c(n_col, n_col, n))
+
+  u0s <- rep(quant, n_col)
+  x_it <- apply_integral_transform(x, u0s=u0s)
+  testthat::expect_equal(dim(x_it$data), c(n_col, n_col, n))
+  testthat::expect_lte(max(x_it$data), 1.0)
+  testthat::expect_gte(max(x_it$data), 0.0)
+})
+
 test_that("preprocessing/reverse_integral_transform/", {
   n <- 10000
   quant <- .75
@@ -86,9 +101,30 @@ test_that("preprocessing/apply_reverse_integral_transform/", {
 
   u0s <- rep(quant, n_col)
   x_it <- apply_integral_transform(x, u0s=u0s)$data
-  x_rit <- apply_reverse_integral_transform(x_it, data_source=x, u0s = rep(quant, n_col), shapes = rep(xi, n_col), scales = rep(beta, n_col))
+  x_rit <- apply_reverse_integral_transform(
+    x_it, data_source=x, u0s = rep(quant, n_col), shapes = rep(xi, n_col), scales = rep(beta, n_col)
+  )
   x_rit <- x_rit$data
   testthat::expect_equal(dim(x_rit), c(n, n_col))
   testthat::expect_equal(max(x_rit)/max(x), 1, tolerance=0.30)
-  testthat::expect_equal(min(x_rit), min(x), tolerance=1e-3)
+  testthat::expect_equal(min(x_rit), min(x), tolerance=5e-3)
+})
+
+test_that("preprocessing/apply_reverse_integral_transform/three_dims", {
+  n <- 10000
+  n_col <- 10
+  quant <- .75
+  xi <- 0.1
+  beta <- 1.
+  x <- array(evir::rgpd(n = n*n_col*n_col, xi = xi, beta = beta), c(n_col, n_col, n))
+
+  u0s <- rep(quant, n_col)
+  x_it <- apply_integral_transform(x, u0s=u0s)$data
+  x_rit <- apply_reverse_integral_transform(
+    x_it, data_source=x, u0s = rep(quant, n_col), shapes = rep(xi, n_col), scales = rep(beta, n_col)
+  )
+  x_rit <- x_rit$data
+  testthat::expect_equal(dim(x_rit), c(n_col, n_col, n))
+  testthat::expect_equal(max(x_rit)/max(x), 1, tolerance=0.30)
+  testthat::expect_equal(min(x_rit), min(x), tolerance=5e-3)
 })
