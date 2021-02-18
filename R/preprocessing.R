@@ -45,23 +45,25 @@ partial_gpd <- function(x, u0){
 integral_transform <- function(x, u0){
   # u0 is a quantile value between 0 and 1
   # x is a vector
+  x_it <- rep(0, length(x))
   thres <- quantile(x, u0)
   p_ecdf <- partial_ecdf(x, u0)
   p_gpd <- partial_gpd(x, u0)
-  x[x <= thres] <- p_ecdf[['data']] * u0
-  x[x > thres] <- p_gpd[['data']] * (1. - u0) + u0
+
+  x_it[x <= thres] <- p_ecdf[['data']] * u0
+  x_it[x > thres] <- p_gpd[['data']] * (1. - u0) + u0
   return(
     list(
-      'data'=x,
+      'data'=x_it,
       'par.ests'=p_gpd$par.ests,
       'par.ses'=p_gpd$par.ses,
-      'ecdf'=p_ecdf$ecdf,
       'u0'=u0
     )
   )
 }
 
 # Applying integral transform on each marginal
+# TODO add ecdf which can compute quantile
 apply_integral_transform <- function(data, u0s){
   stopifnot(ncol(data) == length(u0s))
   has_3_dims <- length(dim(data)) == 3
@@ -83,7 +85,6 @@ apply_integral_transform <- function(data, u0s){
   data_it_values <- do.call(cbind, lapply(data_it, function(x){x$data}))
   data_it_ests <- do.call(rbind, lapply(data_it, function(x){x$par.ests}))
   data_it_ses <- do.call(rbind, lapply(data_it, function(x){x$par.ses}))
-  data_it_ecdf <- do.call(cbind, lapply(data_it, function(x){x$ecdf}))
   data_it_u0 <- do.call(cbind, lapply(data_it, function(x){x$u0}))
 
   if(has_3_dims){
@@ -96,7 +97,6 @@ apply_integral_transform <- function(data, u0s){
       'data'=data_it_values,
       'par.ests'=data_it_ests,
       'par.ses'=data_it_ses,
-      'ecdf'=data_it_ecdf,
       'u0s'=data_it_u0
     )
   )
@@ -121,7 +121,6 @@ reverse_integral_transform <- function(x, x_source, u0, shape, scale){
   )
 }
 
-#TODO write tests
 apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes, scales){
   stopifnot(ncol(data_unif) == ncol(data_source))
   stopifnot(ncol(data_unif) == length(u0s))
@@ -135,7 +134,7 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
     k <- dim(data_unif)[1]
     d <- dim(data_unif)[2]
     n <- dim(data_unif)[3]
-    data_unif_2 <- apply(data_unif, 2, cbind) # concatenate into (, d)
+    data_unif_2 <- apply(data_unif, 2, cbind) # concatenate into (k*n, d)
   }else{
     data_unif_2 <- data_unif
   }

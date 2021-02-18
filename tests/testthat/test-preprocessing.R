@@ -40,7 +40,6 @@ test_that("preprocessing/integral_transform/", {
   x <- evir::rgpd(n = n, xi = xi, beta = beta)
 
   x_it <- integral_transform(x, u0=quant)[['data']]
-  hist(x_it, breaks=50)
   testthat::expect_equal(length(x_it), n)
   testthat::expect_lte(max(x_it), 1.0)
   testthat::expect_gte(max(x_it), 0.0)
