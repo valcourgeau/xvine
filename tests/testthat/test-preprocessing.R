@@ -32,6 +32,71 @@ test_that("preprocessing/partial_gpd/", {
   testthat::expect_gte(max(x_partial_ecdf), 0.0)
 })
 
+test_that("preprocessing/build_above_conditional_stack/", {
+  n <- 1000
+  n_col <- 5
+  k.m <- 4
+  col_fixed <- 2
+  quant <- .75
+  xi <- 0.1
+  beta <- 1.
+
+  set.seed(42)
+  x <- evir::rgpd(n = n * n_col, xi = xi, beta = beta)
+  x <- matrix(x, ncol = n_col)
+  above_stack <- build_above_conditional_stack(
+    data=x, k=k.m, col=col_fixed, u0=quant
+  )
+
+  thres <- quantile(x[,col_fixed], quant)
+  testthat::expect_equal(nrow(above_stack), (1-quant) * n, tolerance = 1)
+  testthat::expect_gte(min(above_stack[,col_fixed]), thres)
+})
+
+test_that("preprocessing/build_below_conditional_stack/", {
+  n <- 1000
+  n_col <- 5
+  k.m <- 4
+  col_fixed <- 2
+  quant <- .75
+  xi <- 0.1
+  beta <- 1.
+
+  set.seed(42)
+  x <- evir::rgpd(n = n * n_col, xi = xi, beta = beta)
+  x <- matrix(x, ncol = n_col)
+  above_stack <- build_below_conditional_stack(
+    data=x, k=k.m, col=col_fixed, u0=quant
+  )
+
+  thres <- quantile(x[,col_fixed], quant)
+  testthat::expect_equal(nrow(above_stack), quant * n, tolerance = 1)
+  testthat::expect_lte(max(above_stack[,col_fixed]), thres)
+})
+
+test_that("preprocessing/build_timewise_stack/", {
+  n <- 1000
+  n_col <- 5
+  k.m <- 4
+  xi <- 0.1
+  beta <- 1.
+
+  set.seed(42)
+  x <- evir::rgpd(n = n * n_col, xi = xi, beta = beta)
+  x <- matrix(x, ncol = n_col)
+  timewise_stack <- build_timewise_stack(
+    data=x, k=k.m
+  )
+
+  std_stack <- build_stack(data=x, k=k.m)
+
+  testthat::expect_equal(length(timewise_stack), k.m-1)
+  lapply(
+    seq_len(k.m-1),
+    function(i)  testthat::expect_equal(dim(timewise_stack[[i]]), c(n-k.m+1, n_col*2))
+  )
+})
+
 test_that("preprocessing/integral_transform/", {
   n <- 10000
   quant <- .75
@@ -91,7 +156,7 @@ test_that("preprocessing/reverse_integral_transform/", {
 })
 
 test_that("preprocessing/apply_reverse_integral_transform/", {
-  n <- 1000
+  n <- 10000
   n_col <- 10
   quant <- .75
   xi <- 0.1

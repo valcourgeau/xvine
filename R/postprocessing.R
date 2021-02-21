@@ -1,5 +1,7 @@
 
 split_data <- function(data, col_source, u0_source){
+  # splits data of col_source below and above u0_source
+  # taking the minimum of the two
   k <- dim(data)[1]
   n <- dim(data)[3]
   stopifnot(k >= 2)
@@ -9,11 +11,13 @@ split_data <- function(data, col_source, u0_source){
   stopifnot(any(!above_idx)) # check some are below
 
   if(sum(above_idx) >= n/2){
+    # takes length of complement
     below_target_data <- data[2:k, col_target, !above_idx]
     update_above_idx <- which(above_idx)
     above_idx <- sample(update_above_idx, size = sum(!above_idx), replace = F)
     above_target_data <- data[2:k, col_target, above_idx]
   }else{
+    # takes length of above_idx
     above_target_data <- data[2:k, col_target, above_idx]
     below_idx <- which(!above_idx)
     below_idx <- sample(below_idx, size = sum(above_idx), replace = F)
@@ -27,7 +31,6 @@ split_data <- function(data, col_source, u0_source){
     )
   )
 }
-
 
 proba_single_target <- function(data, col_target, col_source, u0_target, u0_source){
   # data: matrix k * d * n

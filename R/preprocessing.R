@@ -183,16 +183,44 @@ build_stack <- function(data, k){
   return(dt_stack)
 }
 
-build_conditional_stack <- function(data, k, col, u0){
+build_above_conditional_stack <- function(data, k, col, u0){
   # k-window of data where the colomn col is above quantile(u0)
-  # data is a matrix
+  # data is a matrix (n, d)
   # k is the length of the window
   # col idx
   # u0 quantile
 
   thres <- quantile(data[,col], u0)
-  idx <- which(data[,col] >= thres)
+  idx <- which(data[seq_len(nrow(data)-k), col] > thres)
   dt_stack <- build_stack(data, k)
 
   return(dt_stack[idx,])
+}
+
+build_below_conditional_stack <- function(data, k, col, u0){
+  # k-window of data where the colomn col is above quantile(u0)
+  # data is a matrix (n, d)
+  # k is the length of the window
+  # col idx
+  # u0 quantile
+
+  thres <- quantile(data[,col], u0)
+  idx <- which(data[seq_len(nrow(data)-k), col] < thres)
+  dt_stack <- build_stack(data, k)
+
+  return(dt_stack[idx,])
+}
+
+build_timewise_stack <- function(data, k){
+  # data is a matrix
+  # k is the length of the window
+  # returns a list with (x_{t}, x_{t+s}) for 1 <= s <= k
+  dt_stack <- lapply(
+    seq_len(k-1),
+    function(i){
+      cbind(data[1:(nrow(data)-k+1),], data[(i+1):(nrow(data)-k+1+i),])
+    }
+  )
+
+  return(dt_stack)
 }
