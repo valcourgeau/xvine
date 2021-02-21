@@ -71,7 +71,7 @@ fit_markov_conditional_rvines <- function(data, k.markov, col_source, u0, ...){
   )
 }
 
-fit_markov_timewise_rvines <- function(data, k.markov, col_source, u0, ...){
+fit_markov_timewise_rvines <- function(data, k.markov, ...){
   # fits a vine to (x_t, t_{t+s}) for each 1 <= s <= k.markov
   assertthat::see_if(max(data) <= 1)
   assertthat::see_if(min(data) >= 0)
@@ -102,6 +102,81 @@ fit_markov_timewise_rvines <- function(data, k.markov, col_source, u0, ...){
         'd'=d
       ),
       class = 'timewise_vine'
+    )
+  )
+}
+
+fit_markov_conditional_timewise_rvines <- function(data, k.markov, col_source, u0, ...){
+  # fits a vine to (x_t, t_{t+s}) for each 1 <= s <= k.markov
+  assertthat::see_if(max(data) <= 1)
+  assertthat::see_if(min(data) >= 0)
+  d <- dim(data)[2]
+
+  n_cores <- parallel::detectCores()
+  dt_timewise_stack <- build_timewise_stack(
+    data = data, k = k.markov
+  )
+  dt_above_timewise_stack <- build_above_conditional_stack(
+    data = data, k = k.markov, col = col_source, u0 = u0
+  )
+  dt_below_timewise_stack <- build_below_conditional_stack(
+    data = data, k = k.markov, col = col_source, u0 = u0
+  )
+
+  vine_above_timewise <- lapply(
+    dt_timewise_stack,
+    function(dt_stack){
+      v <- rvinecopulib::vine(
+        dt_above_timewise_stack, cores = n_cores,
+        margins_controls=list(
+          xmin=rep(0, d),
+          xmax=rep(1, d)
+        ), ...
+      )
+      return(v)
+    }
+  )
+
+  vine_below_timewise <- lapply(
+    dt_timewise_stack,
+    function(dt_stack){
+      v <- rvinecopulib::vine(
+        dt_below_timewise_stack, cores = n_cores,
+        margins_controls=list(
+          xmin=rep(0, d),
+          xmax=rep(1, d)
+        ), ...
+      )
+      return(v)
+    }
+  )
+
+  vine_above_timewise <- structure(
+    list(
+      'timewise'=vine_above_timewise,
+      'd'=d
+    ),
+    class = 'timewise_vine'
+  )
+
+  vine_below_timewise <- structure(
+    list(
+      'timewise'=vine_below_timewise,
+      'd'=d
+    ),
+    class = 'timewise_vine'
+  )
+
+  return(
+    structure(
+      list(
+        'above_timewise'=vine_above_timewise,
+        'below_timewise'=vine_below_timewise,
+        'd'=d,
+        'u0'=u0,
+        'col'=col
+      ),
+      class = 'cond_timewise_vine'
     )
   )
 }

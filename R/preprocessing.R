@@ -205,7 +205,7 @@ build_below_conditional_stack <- function(data, k, col, u0){
   # u0 quantile
 
   thres <- quantile(data[,col], u0)
-  idx <- which(data[seq_len(nrow(data)-k), col] < thres)
+  idx <- which(data[seq_len(nrow(data)-k), col] <= thres)
   dt_stack <- build_stack(data, k)
 
   return(dt_stack[idx,])
@@ -221,6 +221,32 @@ build_timewise_stack <- function(data, k){
       cbind(data[1:(nrow(data)-k+1),], data[(i+1):(nrow(data)-k+1+i),])
     }
   )
+
+  return(dt_stack)
+}
+
+build_above_conditional_timewise_stack <- function(data, k, col, u0){
+  # data is a matrix
+  # k is the length of the window
+  # returns a list with (x_{t}, x_{t+s}) for 1 <= s <= k where x_t above u0 quantile
+
+  thres <- quantile(data[,col], u0)
+  idx <- which(data[seq_len(nrow(data)-k), col] > thres)
+  dt_stack <- build_timewise_stack(data, k)
+  dt_stack <- lapply(dt_stack, function(dt_s) dt_s[idx,])
+
+  return(dt_stack)
+}
+
+build_below_conditional_timewise_stack <- function(data, k, col, u0){
+  # data is a matrix
+  # k is the length of the window
+  # returns a list with (x_{t}, x_{t+s}) for 1 <= s <= k where x_t above u0 quantile
+
+  thres <- quantile(data[,col], u0)
+  idx <- which(data[seq_len(nrow(data)-k), col] <= thres)
+  dt_stack <- build_timewise_stack(data, k)
+  dt_stack <- lapply(dt_stack, function(dt_s) dt_s[idx,])
 
   return(dt_stack)
 }

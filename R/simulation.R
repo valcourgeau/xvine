@@ -54,9 +54,6 @@ model_simulation <- function(n, model, ...){
         function(i){
           # generate x_{t+i}
           runif_extra_dim <- matrix(runif(n*model$d), ncol=model$d)
-          print('i-th')
-          print(i)
-          print(model$timewise[[i]])
           vine_sim_extra <- rvinecopulib::inverse_rosenblatt(
             u = cbind(vine_sim_base, runif_extra_dim),
             model = model$timewise[[i]],
@@ -81,6 +78,15 @@ model_simulation <- function(n, model, ...){
 
     assertthat::are_equal(dim(vine_sim_vals), c(k.m, model$d, n))
 
+    return(vine_sim_vals)
+  }
+
+  if(inherits(model, "cond_timewise_vine")){
+    n_half <- round(n/2)
+
+    vine_sim_vals_above <- model_simulation(n = n_half, model$above_timewise) # (k, d, n_half)
+    vine_sim_vals_below <- model_simulation(n = n-n_half, model$below_timewise) # (k, d, n-n_half)
+    vine_sim_vals <- abind::abind(vine_sim_vals_above, vine_sim_vals_below, along=3)
     return(vine_sim_vals)
   }
 
