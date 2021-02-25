@@ -84,6 +84,7 @@ proba_cross_target <- function(data, w_target, col_source, u0_target, u0_source)
 
   above_target_data <- data[2:k,, above_idx] # remove time t and keeps all marginals
   if(is.vector(above_target_data)){
+    stop('Not Implemented')
     p_factual <- mean(above_target_data > u0_target)
   }else{
     p_factual <- apply(above_target_data, 1, function(x){rowMeans(w_target %*% x > u0_target)}) # filter target
@@ -91,6 +92,7 @@ proba_cross_target <- function(data, w_target, col_source, u0_target, u0_source)
 
   below_target_data <- data[2:k,, !above_idx]
   if(is.vector(below_target_data)){
+    stop('Not Implemented')
     p_counterfactual <- mean(below_target_data > u0_target)
   }else{
     p_counterfactual <- apply(below_target_data, 1, function(x){rowMeans(w_target %*% x > u0_target)}) # filter target

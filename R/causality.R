@@ -4,7 +4,7 @@ proba_necessary_causation <- function(p_factual, p_counterfactual){
   )
 }
 
-maximise_pn <- function(data, target, col_source, u0_target, u0_source, type = 'time'){
+maximise_pn <- function(data, target, col_source, u0_target, u0_source, type = 'time', routine='optim'){
   # target can be times or col_target
   # type can be 'time', 'cross' & 'all'
   stopifnot(type %in% c('time', 'cross', 'all'))
@@ -27,11 +27,24 @@ maximise_pn <- function(data, target, col_source, u0_target, u0_source, type = '
     }
   }
 
-  optim_routine <- optim(
-    par = w_t, fn = function(w){-wrap_pn(w)}
-  ) # maximising PN
-  if(optim_routine$convergence != 0) warning(paste('maximise_pn: optim routine has not converged for target', target))
-  return(list('weights'=softmax(optim_routine$par)))
+  if(routine == 'optim'){
+    optim_routine <- optim(
+      par = w_t, fn = function(w){-wrap_pn(w)}
+    ) # maximising PN
+    if(optim_routine$convergence != 0) warning(paste('maximise_pn: optim routine has not converged for target', target))
+    return(list('weights'=softmax(optim_routine$par)))
+  }
+  if(routine == 'deoptim'){
+    optim_routine <- DEoptim::DEoptim(
+      lower = rep(-2.5, length(w_t)),
+      upper = rep(0, length(w_t)),
+      fn = function(w){-wrap_pn(w)},
+      control = DEoptim::DEoptim.control(trace = FALSE)
+    ) # maximising PN
+    return(list('weights'=softmax(optim_routine$optim$bestmem)))
+  }
+
+  stop('Not Implemented')
 }
 
 assemble_pn <- function(pn){

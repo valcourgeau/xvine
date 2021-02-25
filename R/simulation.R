@@ -83,7 +83,6 @@ model_simulation <- function(n, model, ...){
 
   if(inherits(model, "cond_timewise_vine")){
     n_half <- round(n/2)
-
     vine_sim_vals_above <- model_simulation(n = n_half, model$above_timewise) # (k, d, n_half)
     vine_sim_vals_below <- model_simulation(n = n-n_half, model$below_timewise) # (k, d, n-n_half)
     vine_sim_vals <- abind::abind(vine_sim_vals_above, vine_sim_vals_below, along=3)

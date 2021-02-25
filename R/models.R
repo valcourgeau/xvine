@@ -30,28 +30,31 @@ fit_markov_conditional_rvines <- function(data, k.markov, col_source, u0, ...){
   assertthat::see_if(max(data) <= 1)
   assertthat::see_if(min(data) >= 0)
   d <- dim(data)[2]
-
   n_cores <- parallel::detectCores()
+
+  # above
   dt_above_stack <- build_above_conditional_stack(
     data = data, k = k.markov, col = col_source, u0 = u0
   )
   vine_above <- rvinecopulib::vine(
-    dt_above_stack, cores = n_cores,
+    dt_above_stack, cores = 1,
     margins_controls=list(
-      xmin=rep(0, d),
-      xmax=rep(1, d)
+      xmin=rep(0, d*k.markov), #pmax(1e-5, apply(dt_above_stack, MARGIN = 2, min)),
+      xmax=rep(1, d*k.markov) #pmin(1.0, apply(dt_above_stack, MARGIN = 2, max))
     ),
     ...
   )
   vine_above$d <- d
+
+  # below
   dt_below_stack <- build_below_conditional_stack(
     data = data, k = k.markov, col = col_source, u0 = u0
   )
   vine_below <- rvinecopulib::vine(
-    dt_below_stack, cores = n_cores,
+    dt_below_stack, cores = n_cores-1,
     margins_controls=list(
-      xmin=rep(0, d),
-      xmax=rep(1, d)
+      xmin=rep(0, d*k.markov), #pmax(0, apply(dt_below_stack, MARGIN = 2, min)),
+      xmax=rep(1, d*k.markov) #pmin(1, apply(dt_below_stack, MARGIN = 2, max))
     ),
     ...
   )
@@ -113,21 +116,18 @@ fit_markov_conditional_timewise_rvines <- function(data, k.markov, col_source, u
   d <- dim(data)[2]
 
   n_cores <- parallel::detectCores()
-  dt_timewise_stack <- build_timewise_stack(
-    data = data, k = k.markov
-  )
-  dt_above_timewise_stack <- build_above_conditional_stack(
+  dt_above_timewise_stack <- build_above_conditional_timewise_stack(
     data = data, k = k.markov, col = col_source, u0 = u0
   )
-  dt_below_timewise_stack <- build_below_conditional_stack(
+  dt_below_timewise_stack <- build_below_conditional_timewise_stack(
     data = data, k = k.markov, col = col_source, u0 = u0
   )
 
   vine_above_timewise <- lapply(
-    dt_timewise_stack,
+    dt_above_timewise_stack,
     function(dt_stack){
       v <- rvinecopulib::vine(
-        dt_above_timewise_stack, cores = n_cores,
+        dt_stack, cores = n_cores,
         margins_controls=list(
           xmin=rep(0, d),
           xmax=rep(1, d)
@@ -138,10 +138,10 @@ fit_markov_conditional_timewise_rvines <- function(data, k.markov, col_source, u
   )
 
   vine_below_timewise <- lapply(
-    dt_timewise_stack,
+    dt_below_timewise_stack,
     function(dt_stack){
       v <- rvinecopulib::vine(
-        dt_below_timewise_stack, cores = n_cores,
+        dt_stack, cores = n_cores,
         margins_controls=list(
           xmin=rep(0, d),
           xmax=rep(1, d)
