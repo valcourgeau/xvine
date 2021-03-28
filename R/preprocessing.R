@@ -171,6 +171,45 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
   )
 }
 
+# TODO test
+reverse_exponential <- function(x){
+  # takes uniform(0, 1) and transforms them into Exp(1) RV.
+  stopifnot(min(x) >= 0, max(x) <= 1)
+  return(list('data'=stats::qexp(x, rate = 1)))
+}
+
+# TODO test
+apply_reverse_exponential <- function(data_unif){
+  stopifnot(0 <= min(data_unif), max(data_unif) <= 1)
+
+  has_3_dims <- length(dim(data_unif)) == 3
+  if(has_3_dims){
+    k <- dim(data_unif)[1]
+    d <- dim(data_unif)[2]
+    n <- dim(data_unif)[3]
+    data_unif_2 <- apply(data_unif, 2, cbind) # concatenate into (k*n, d)
+  }else{
+    data_unif_2 <- data_unif
+  }
+
+  data_source <- apply(data_unif, 2, cbind)
+
+  # apply it on each marginal
+  data_rit <- lapply(
+    seq_len(ncol(data_unif)),
+    function(i){reverse_exponential(x = data_unif_2[,i])}
+  )
+
+  data_rit_values <- do.call(cbind, lapply(data_rit, function(x) x$data)) # (k*n, d)
+
+  if(has_3_dims){
+    data_rit_values <- array(data_rit_values, c(k, n, d))
+    data_rit_values <- aperm(data_rit_values, c(1, 3, 2))
+  }
+
+  return(list('data'=data_rit_values))
+}
+
 build_stack <- function(data, k){
   # data is a matrix
   # k is the length of the window
