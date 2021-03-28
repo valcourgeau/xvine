@@ -44,19 +44,23 @@ maximise_poc <- function(data, target, col_source, u0_target, u0_source, poc=NUL
 
   if(routine == 'optim'){
     optim_routine <- optim(
-      par = w_t, fn = function(w){-wrap_pn(w)}
+      par = w_t,
+      fn = function(w){-wrap_pn(w)},
+      method = 'L-BFGS-B',
+      lower = rep(0, length(w_t)),
+      upper = rep(1, length(w_t)),
+      control = list(trace=1)
     ) # maximising PN
-    if(optim_routine$convergence != 0) warning(paste('maximise_pn: optim routine has not converged for target', target))
-    return(list('weights'=softmax(optim_routine$par)))
+    return(list('weights'=optim_routine$par))#(optim_routine$par)))
   }
   if(routine == 'deoptim'){
     optim_routine <- DEoptim::DEoptim(
-      lower = rep(-4, length(w_t)),
-      upper = rep(0, length(w_t)),
+      lower = rep(0, length(w_t)),
+      upper = rep(1, length(w_t)),
       fn = function(w){-wrap_pn(w)},
       control = DEoptim::DEoptim.control(trace = FALSE)
     ) # maximising PN
-    return(list('weights'=softmax(optim_routine$optim$bestmem)))
+    return(list('weights'=optim_routine$optim$bestmem)) # softmax(optim_routine$optim$bestmem)))
   }
 
   stop('Not Implemented')
@@ -106,9 +110,12 @@ wrapper_pn_ct <- function(data, times, col_source, u0_target, u0_source, poc=NUL
   f <- wrapper_ct(data, col_source, u0_target, u0_source) # wrapper
   return(
     function(w){
-      w <- softmax(w)
-      w <- cutoff(w, cutoff.value=cutoff.value)
-      causal_p <- f(w)
+      # w <- softmax(w)
+      # w <- cutoff(w, cutoff.value=cutoff.value)
+      if(sum(abs(w)) < .Machine$double.eps){
+        w <- w + .Machine$double.eps
+      }
+      causal_p <- f(w / sum(w)) # TODO used to be f(w)
       pn <- poc(
         causal_p$factual,
         causal_p$counterfactual
@@ -132,9 +139,12 @@ wrapper_pn_tt <- function(data, col_target, col_source, u0_target, u0_source, po
   f <- wrapper_tt(data, col_source, u0_target, u0_source) # wrapper
   return(
     function(w){
-      w <- softmax(w)
-      w <- cutoff(w, cutoff.value=cutoff.value)
-      causal_p <- f(w)
+      # w <- softmax(w)
+      # w <- cutoff(w, cutoff.value=cutoff.value)
+      if(sum(abs(w)) < .Machine$double.eps){
+        w <- w + .Machine$double.eps
+      }
+      causal_p <- f(w / sum(w)) # TODO used to be f(w)
       pn <- poc(
         causal_p$factual,
         causal_p$counterfactual
@@ -156,14 +166,14 @@ wrapper_pn_all <- function(data, col_source, u0_target, u0_source, poc=NULL, lam
   f <- wrapper_all(data, col_source, u0_target, u0_source) # wrapper
   return(
     function(w){
-      w <- as.vector(w)
-      w <- softmax(w)
-      w <- cutoff(w, cutoff.value=cutoff.value)
-      causal_p <- f(w)
-      pn <- poc(
-        causal_p$factual,
-        causal_p$counterfactual
-      )
+      # w <- as.vector(w)
+      # w <- softmax(w)
+      # w <- cutoff(w, cutoff.value=cutoff.value)
+      if(sum(abs(w)) < .Machine$double.eps){
+        w <- w + .Machine$double.eps
+      }
+      causal_p <- f(w / sum(w)) # TODO used to be f(w)
+      pn <- poc(causal_p$factual, causal_p$counterfactual)
       if(is.null(lambda)){
         return(assemble_pn(pn))
       }else{
