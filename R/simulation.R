@@ -1,5 +1,5 @@
 model_simulation <- function(n, model, ...){
-  n_cores <- parallel::detectCores()
+  n_cores <- 2 # parallel::detectCores()
   if(inherits(model, "svine_dist")){
     k.markov <- model$copula$p
     vine_sim_vals <- NULL

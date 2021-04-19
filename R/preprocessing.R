@@ -108,9 +108,10 @@ reverse_integral_transform <- function(x, x_source, u0, shape, scale){
   thres <- quantile(x_source, u0)
 
   reversed_data[x <= u0] <- quantile(
-    x_source[x_source <= u0],
-    probs=x[x <= u0]
+    x_source[x_source <= thres],
+    probs=x[x <= u0]/u0
   )
+
   reversed_data[x > u0] <- evir::qgpd(
     p = (x[x > u0]-u0)/(1-u0), mu = thres, xi = shape, beta = scale
   )
@@ -139,8 +140,8 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
     data_unif_2 <- data_unif
   }
 
-  data_source <- apply(data_unif, 2, cbind)
-
+  data_source <- apply(data_source, 2, cbind)
+  print(dim(data_unif_2))
   # apply it on each marginal
   data_rit <- lapply(
     1:length(u0s),
@@ -167,6 +168,64 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
       'data'=data_rit_values,
       'data_source'=data_source,
       'u0s'=u0s
+    )
+  )
+}
+
+
+apply_dual_reverse_integral_transform <- function(data_unif, data_source, u0s, conditional_on, shapes_f, scales_f, shapes_cf, scales_cf){
+  stopifnot(ncol(data_unif) == ncol(data_source))
+  stopifnot(ncol(data_unif) == length(u0s))
+  stopifnot(length(shapes_f) == ncol(data_unif))
+  stopifnot(length(shapes_cf) == ncol(data_unif))
+  stopifnot(length(scales_f) == ncol(data_unif))
+  stopifnot(length(scales_cf) == ncol(data_unif))
+  stopifnot(0 <= min(data_unif) & max(data_unif) <= 1)
+
+  has_3_dims <- length(dim(data_unif)) == 3
+
+  if(has_3_dims){
+    k <- dim(data_unif)[1]
+    d <- dim(data_unif)[2]
+    n <- dim(data_unif)[3]
+    idx_f <- which(data_unif[1, conditional_on,] > u0s[conditional_on])
+    idx_cf <- which(data_unif[1, conditional_on,] <= u0s[conditional_on])
+
+    data_rit_f <- apply_reverse_integral_transform(
+      data_unif = data_unif[,, idx_f],
+      data_source = data_source,
+      u0s = u0s,
+      shapes = shapes_f,
+      scales = scales_f
+    )$data
+    print(paste('data_rit_f', dim(data_rit_f)))
+
+    data_rit_cf <- apply_reverse_integral_transform(
+      data_unif = data_unif[,,idx_cf],
+      data_source = data_source,
+      u0s = u0s,
+      shapes = shapes_cf,
+      scales = scales_cf
+    )$data
+    print(paste('data_rit_cf', dim(data_rit_cf)))
+
+    tmp <- array(0, dim(data_unif))
+    tmp[,,idx_f] <- data_rit_f
+    tmp[,,idx_cf] <- data_rit_cf
+  }else{
+    stop('Not Implemented')
+  }
+
+
+  return(
+    list(
+      'data'=tmp,
+      'data_source'=data_source,
+      'u0s'=u0s,
+      'scales_f'=scales_f,
+      'scales_cf'=scales_cf,
+      'shapes_f'=shapes_f,
+      'shapes_cf'=shapes_cf
     )
   )
 }
