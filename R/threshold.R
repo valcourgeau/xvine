@@ -6,9 +6,14 @@ forward_stop <- function(p_values, level=0.05){
   # J. R. Stat. Soc. Ser. B. Stat. Methodol. 78
   # 423–444. MR3454203
   k <- length(p_values)
-  stopping_vals <- - cumsum(log(pmax(.Machine$double.eps, 1-p_values))) / k
-
-  return(list(idx=which.max(stopping_vals < level), stopping_values=stopping_vals))
+  stopping_vals <- - cumsum(log(pmax(.Machine$double.eps, 1-p_values))) / seq_len(k)
+  idx <- which(stopping_vals[stopping_vals < level])
+  if(length(idx) > 0){
+    idx <- max(idx)
+  }else{
+    idx <- NA
+  }
+  return(list(idx=idx, stopping_values=stopping_vals))
 }
 
 
