@@ -14,7 +14,7 @@ Description: Extreme Event Propagation (EEP) framework and tools to infer
     Based on stationary vine copulas, it comprises counnterfactual causal
     inference strategies described in Courgeau and Veraart (2021)
     <arXiv:2106.13564>, regularisation with various extreme event
-    formulation.
+    formulations.
 License: MIT + file LICENSE
 Depends: 
     R (>= 2.10)
