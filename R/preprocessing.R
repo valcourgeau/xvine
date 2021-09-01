@@ -141,7 +141,7 @@ apply_reverse_integral_transform <- function(data_unif, data_source, u0s, shapes
   }
 
   data_source <- apply(data_source, 2, cbind)
-  print(dim(data_unif_2))
+
   # apply it on each marginal
   data_rit <- lapply(
     1:length(u0s),
@@ -198,7 +198,6 @@ apply_dual_reverse_integral_transform <- function(data_unif, data_source, u0s, c
       shapes = shapes_f,
       scales = scales_f
     )$data
-    print(paste('data_rit_f', dim(data_rit_f)))
 
     data_rit_cf <- apply_reverse_integral_transform(
       data_unif = data_unif[,,idx_cf],
@@ -207,7 +206,6 @@ apply_dual_reverse_integral_transform <- function(data_unif, data_source, u0s, c
       shapes = shapes_cf,
       scales = scales_cf
     )$data
-    print(paste('data_rit_cf', dim(data_rit_cf)))
 
     tmp <- array(0, dim(data_unif))
     tmp[,,idx_f] <- data_rit_f

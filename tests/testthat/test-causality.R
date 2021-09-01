@@ -22,8 +22,6 @@ test_that("causality/wrapper_pn_ct/numeric_results", {
 
   wrap_ct <- wrapper_pn_ct(v_sims, col_source=1, times=3:5, u0_source=.1, u0_target=.1)
   testthat::expect_true(is.numeric(wrap_ct(rep(1, n_col))))
-
-  # print(microbenchmark::microbenchmark(wrap_ct(rep(1, n_col))))
 })
 
 test_that("causality/wrapper_pn_tt/numeric_results", {
@@ -54,8 +52,6 @@ test_that("causality/wrapper_pn_tt/numeric_results", {
   wrap_tt <- wrapper_pn_tt(v_sims, col_target=2:3, col_source=1, u0_source=.1, u0_target=.1)
   testthat::expect_true(is.numeric(wrap_tt(w_t)))
   testthat::expect_equal(length(wrap_tt(w_t)), 1)
-
-  # print(microbenchmark::microbenchmark(wrap_tt(rep(1, n_col))))
 })
 
 test_that("causality/wrapper_pn_all/numeric_results", {
@@ -86,8 +82,6 @@ test_that("causality/wrapper_pn_all/numeric_results", {
   wrap_tt <- wrapper_pn_all(v_sims, col_source=1, u0_source=.1, u0_target=.1)
   testthat::expect_true(is.numeric(wrap_all(w_t)))
   testthat::expect_equal(length(wrap_all(w_t)), 1)
-
-  # print(microbenchmark::microbenchmark(wrap_tt(rep(1, n_col))))
 })
 
 test_that("causality/wrapper_pn_all/optim", {

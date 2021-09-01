@@ -11,8 +11,7 @@ test_that("postprocessing/model_simulation/fit_markov_svines/", {
   data <- matrix(evir::rgpd(n = n*n_col, xi = xi, beta = beta), ncol = n_col, nrow = n)
   data_it <- apply_integral_transform(data, u0s=rep(quant, n_col))
   svine_fit <- fit_markov_svines(
-    data = data_it$data, k.markov=k.m,
-    family_set="archimedean", selcrit="mbicv"
+    data = data_it$data, k.markov=k.m, family_set="archimedean", selcrit="mbicv"
   )
   v_sims <- model_simulation(n=n_sims, model=svine_fit, qrng=F)
   testthat::expect_equal(as.vector(dim(v_sims)), c(k.m, n_col, n_sims))

@@ -68,7 +68,6 @@ test_that("metrics/apply_distr_distance/dims_3d", {
   x <- array(runif(n), c(k, d, n))
   y <- array(runif(n), c(k, d, n))
   distr_dist <- apply_distr_distance(x, y, method='kullback-leibler', per_bin=100)
-  print(distr_dist)
   testthat::expect_equal(dim(distr_dist), c(k, d))
 })
 

@@ -205,7 +205,7 @@ wrapper_pn_all <- function(data, col_source, u0_target, u0_source, poc=NULL, lam
       }
       causal_p <- f(w / sum(w)) # TODO used to be f(w)
       poc_value <- poc(causal_p$factual, causal_p$counterfactual)
-      print(paste('wrapper_pn_all', 'poc_value', poc_value))
+
       if(is.null(lambda)){
         return(assemble_pn(poc_value))
       }else{
