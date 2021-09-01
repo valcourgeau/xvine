@@ -1,21 +1,32 @@
-Package: xvine
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: MIT
-Encoding: UTF-8
-LazyData: true
-Imports:
-    rvinecopulib,
-    evir,
-    zoo,
-    abind,
-    svines,
+Package: xvine
+Title: Extreme Vines and their Counterfactual Causality
+Version: 1.0.0
+Authors@R: 
+    person(given = "Valentin",
+           family = "Courgeau",
+           role = c("aut", "cre", "cph"),
+           email = "val.courgeau@gmail.com",
+           comment = c(ORCID = "0000-0002-7423-0090"))
+Maintainer: Valentin Courgeau <val.courgeau@gmail.com>
+Description: Extreme Event Propagation (EEP) framework and tools to infer
+    causal relationnships between a cause and an impact extreme event.
+    Based on stationary vine copulas, it comprises counnterfactual causal
+    inference strategies described in Courgeau and Veraart (2021)
+    <arXiv:2106.13564>, regularisation with various extreme event
+    formulation.
+License: MIT + file LICENSE
+Depends: 
+    R (>= 2.10)
+Imports: 
     assertthat,
-    stats
+    knitr,
+    stats,
+    utils
 Suggests: 
-    testthat
+    testthat (>= 3.0.0)
+Encoding: UTF-8
+Language: en-GB
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
